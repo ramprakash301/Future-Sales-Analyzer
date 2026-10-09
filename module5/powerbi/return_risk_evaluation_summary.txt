@@ -1,0 +1,22 @@
+RETURN-RISK MODEL EVALUATION REPORT
+========================================
+
+Dataset records: 34,500
+Test size: 20%
+Target: returned (Yes/No)
+Models: Random Forest and Extra Trees
+
+METRICS
+               model  threshold  accuracy  precision_returned  recall_returned  f1_returned  pr_auc  roc_auc
+Random Forest (0.50)        0.5    0.9028              0.0950           0.0892       0.0920  0.0751   0.6022
+  Extra Trees (0.50)        0.5    0.8728              0.0824           0.1286       0.1004  0.0746   0.5980
+  Extra Trees (0.30)        0.3    0.5297              0.0725           0.6378       0.1303  0.0746   0.5980
+
+CONFUSION MATRIX SUMMARY
+               model  true_not_returned  false_returned_alerts  missed_returns  correctly_detected_returns
+Random Forest (0.50)               6195                    324             347                          34
+  Extra Trees (0.50)               5973                    546             332                          49
+  Extra Trees (0.30)               3412                   3107             138                         243
+
+Note: Threshold 0.30 prioritizes finding more returns but can generate more false alerts.
+Scores are based on this dataset and split; they do not guarantee future performance.

@@ -1,0 +1,30 @@
+# Python
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Secrets
+.env
+.env.*
+!.env.example
+.streamlit/secrets.toml
+
+# IDE
+.vscode/
+
+# Temporary files
+*.log
+.DS_Stores
+
+# Model files and large datasets
+*.pkl
+*.joblib
+*.zip
+
+
+# Database and secret files
+*.sql
+.env
+*.csv
