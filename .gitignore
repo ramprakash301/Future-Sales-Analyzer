@@ -27,4 +27,4 @@ env/
 # Database and secret files
 *.sql
 .env
-*.csv
+!module1/data/processed/ecommerce_sales_cleaned.csv
