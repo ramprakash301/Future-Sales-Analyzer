@@ -21,6 +21,7 @@ env/
 # Model files and large datasets
 *.pkl
 !lightgbm_sales_model.pkl
+!module5/powerbi/return_risk_model.pkl
 *.joblib
 *.zip
 
