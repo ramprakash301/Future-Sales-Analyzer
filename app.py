@@ -528,11 +528,9 @@ elif page == "Power BI Dashboard":
         )
 
         performance_path = (
-            PROJECT_ROOT
-            / "module5"
-            / "powerbi"
-            / "model_performance.csv"
-        )
+    PROJECT_ROOT
+    / "model_performance_summary.csv"
+)
 
         if performance_path.exists():
             st.subheader("Model Performance")
