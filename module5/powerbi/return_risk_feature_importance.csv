@@ -1,0 +1,28 @@
+feature,importance,feature_group
+order_day_of_week,0.10449468279747288,order
+order_month,0.09999320051316918,order
+customer_age,0.09826568958438274,customer
+discount,0.07093875081105507,discount
+price,0.06956219238825387,price
+category_Grocery,0.06069083980280916,category
+quantity,0.053958304643427,quantity
+payment_method_Credit Card,0.03420252547815226,payment
+region_South,0.031789992349413945,region
+payment_method_Debit Card,0.03084418258469162,payment
+region_West,0.030060250943209438,region
+customer_gender_Male,0.029390814920545533,customer
+customer_gender_Female,0.029340044487331282,customer
+region_East,0.028683990074005766,region
+region_Central,0.027820865654861013,region
+region_North,0.027736377737648202,region
+category_Fashion,0.025036629565646906,category
+payment_method_UPI,0.022067041156800346,payment
+payment_method_COD,0.01857223849646779,payment
+payment_method_PayPal,0.018546855561371204,payment
+payment_method_Wallet,0.016380653963402592,payment
+category_Electronics,0.015668707433779332,category
+category_Home,0.013010974628654604,category
+category_Beauty,0.011459227755898669,category
+category_Sports,0.011195610591103005,category
+category_Toys,0.010532118438719918,category
+customer_gender_Other,0.009757237637726717,customer

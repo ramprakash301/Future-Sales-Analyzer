@@ -1,0 +1,4 @@
+model,threshold,accuracy,precision_returned,recall_returned,f1_returned,pr_auc,roc_auc
+Random Forest (0.50),0.5,0.9028,0.095,0.0892,0.092,0.0751,0.6022
+Extra Trees (0.50),0.5,0.8728,0.0824,0.1286,0.1004,0.0746,0.598
+Extra Trees (0.30),0.3,0.5297,0.0725,0.6378,0.1303,0.0746,0.598

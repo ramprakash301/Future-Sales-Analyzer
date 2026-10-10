@@ -1,0 +1,7 @@
+payment_method,total_orders,returned_orders,return_rate_percent
+PayPal,3444,199,5.78
+Debit Card,8505,482,5.67
+Credit Card,12170,675,5.55
+UPI,4156,224,5.39
+Wallet,2065,111,5.38
+COD,4160,212,5.1
