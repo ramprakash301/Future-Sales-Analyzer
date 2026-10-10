@@ -522,10 +522,65 @@ elif page == "Power BI Dashboard":
     # MACHINE LEARNING PREDICTION
     elif dashboard_page == "Machine Learning Prediction":
         st.write("Machine learning model information.")
-        st.info(
-            "Use the Sales Prediction and Return Risk Prediction "
-            "pages to run predictions."
-        )
+        st.subheader("Sales Prediction")
+
+with st.form("dashboard_sales_prediction"):
+    price = st.number_input("Price", min_value=0.0, value=100.0)
+    discount = st.number_input(
+        "Discount", min_value=0.0, max_value=1.0, value=0.10
+    )
+    quantity = st.number_input(
+        "Quantity", min_value=1, value=1
+    )
+    delivery_time_days = st.number_input(
+        "Delivery Time (Days)", min_value=0, value=3
+    )
+    shipping_cost = st.number_input(
+        "Shipping Cost", min_value=0.0, value=10.0
+    )
+    customer_age = st.number_input(
+        "Customer Age", min_value=18, max_value=100, value=25
+    )
+    year = st.number_input("Year", min_value=2000, value=2026)
+    month = st.number_input(
+        "Month", min_value=1, max_value=12, value=1
+    )
+    day = st.number_input(
+        "Day", min_value=1, max_value=31, value=15
+    )
+    day_of_week = st.number_input(
+        "Day of Week (0-6)", min_value=0, max_value=6, value=2
+    )
+    week_of_year = st.number_input(
+        "Week of Year", min_value=1, max_value=53, value=3
+    )
+
+    predict_dashboard_sales = st.form_submit_button("Predict Sales")
+
+if predict_dashboard_sales:
+    try:
+        sales_model = load_sales_model()
+
+        input_data = pd.DataFrame([{
+            "price": price,
+            "discount": discount,
+            "quantity": quantity,
+            "delivery_time_days": delivery_time_days,
+            "shipping_cost": shipping_cost,
+            "customer_age": customer_age,
+            "year": year,
+            "month": month,
+            "day": day,
+            "day_of_week": day_of_week,
+            "week_of_year": week_of_year,
+            "discount_percent": discount * 100
+        }])
+
+        prediction = sales_model.predict(input_data)[0]
+        st.success(f"Predicted Net Sales: {prediction:,.2f}")
+
+    except Exception as error:
+        st.error(f"Sales prediction error: {error}")
 
         performance_path = (
     PROJECT_ROOT
