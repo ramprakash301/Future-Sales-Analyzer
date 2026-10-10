@@ -31,3 +31,5 @@ env/
 .env
 !module1/data/processed/ecommerce_sales_cleaned.csv
 !module4/future_sales_predictions.csv
+# Raw dataset
+module1/data/raw/
