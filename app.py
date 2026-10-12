@@ -551,12 +551,6 @@ def show_power_bi_dashboard():
 
                                         st.bar_chart(df.groupby("region")["net_sales"].sum().sort_values(ascending=False))
 
-                              if "category" in df.columns:
-
-                                        st.subheader("Sales by Category")
-
-                                        st.bar_chart(df.groupby("category")["net_sales"].sum().sort_values(ascending=False))
-
                               columns = [c for c in ["order_date", "category", "region", "net_sales"] if c in df.columns]
 
                               st.subheader("Sales Data")
