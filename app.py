@@ -459,7 +459,9 @@ def show_power_bi_dashboard():
 
                               "Customer & Return Analysis",
 
-                              "Discount & Profit/Loss Analysis",
+                                                            "Customer Segmentation",
+
+"Discount & Profit/Loss Analysis",
 
                               "Machine Learning Prediction",
 
@@ -480,6 +482,8 @@ def show_power_bi_dashboard():
           if dashboard_page in ["Executive Overview", "Sales Analysis",
 
                                                                  "Customer & Return Analysis",
+
+                                                                                                                                  "Customer Segmentation",
 
                                                                  "Discount & Profit/Loss Analysis"]:
 
@@ -558,6 +562,84 @@ def show_power_bi_dashboard():
                               st.dataframe(df[columns].head(20), use_container_width=True)
 
 
+
+                    elif dashboard_page == "Customer Segmentation":
+                              st.write("Explore customers grouped by their purchasing value.")
+
+                              segment_df = df.copy()
+                              customer_col = "customer_id" if "customer_id" in segment_df.columns else None
+                              sales_col = "net_sales" if "net_sales" in segment_df.columns else (
+                                        "total_amount" if "total_amount" in segment_df.columns else None
+                              )
+
+                              # Use an existing segment column when available; otherwise
+                              # derive High/Medium/Low Value segments from customer sales.
+                              if "customer_segment" not in segment_df.columns:
+                                        if customer_col and sales_col:
+                                                  segment_df[sales_col] = pd.to_numeric(segment_df[sales_col], errors="coerce")
+                                                  customer_sales = segment_df.groupby(customer_col)[sales_col].sum(min_count=1).dropna()
+                                                  if len(customer_sales) >= 3:
+                                                            customer_segments = pd.qcut(
+                                                                      customer_sales.rank(method="first"),
+                                                                      q=3,
+                                                                      labels=["Low Value", "Medium Value", "High Value"]
+                                                            )
+                                                            segment_lookup = customer_segments.astype(str).to_dict()
+                                                            segment_df["customer_segment"] = segment_df[customer_col].map(segment_lookup)
+                                                  else:
+                                                            st.warning("Not enough customers to create three segments.")
+                                                            segment_df["customer_segment"] = "Medium Value"
+                                        else:
+                                                  st.warning("No customer_segment column or customer_id/sales fields were found to build segments.")
+                                                  segment_df["customer_segment"] = "Unclassified"
+
+                              segment_df = segment_df.dropna(subset=["customer_segment"]).copy()
+                              if segment_df.empty:
+                                        st.info("No customer segment data is available to display.")
+                              else:
+                                        if customer_col:
+                                                  customer_counts = segment_df.groupby("customer_segment")[customer_col].nunique().rename("customers")
+                                        else:
+                                                  customer_counts = segment_df["customer_segment"].value_counts().rename("customers")
+                                                  st.caption("Customer counts use dataset rows because customer_id is unavailable.")
+
+                                        order_counts = segment_df["customer_segment"].value_counts().rename("total_orders")
+                                        segment_summary = pd.concat([customer_counts, order_counts], axis=1).fillna(0).astype(int)
+                                        segment_order = [name for name in ["High Value", "Medium Value", "Low Value"] if name in segment_summary.index]
+                                        segment_order += [name for name in segment_summary.index if name not in segment_order]
+                                        segment_summary = segment_summary.reindex(segment_order)
+
+                                        chart_col1, chart_col2 = st.columns(2)
+                                        with chart_col1:
+                                                  st.subheader("Customer Segment Distribution")
+                                                  donut_data = segment_summary.reset_index()
+                                                  donut_data = donut_data.rename(columns={donut_data.columns[0]: "customer_segment"})
+                                                  donut_spec = {
+                                                            "mark": {"type": "arc", "innerRadius": 65},
+                                                            "encoding": {
+                                                                      "theta": {"field": "customers", "type": "quantitative"},
+                                                                      "color": {"field": "customer_segment", "type": "nominal", "title": "Customer Segment"},
+                                                                      "tooltip": [
+                                                                                {"field": "customer_segment", "type": "nominal", "title": "Segment"},
+                                                                                {"field": "customers", "type": "quantitative", "title": "Customers"}
+                                                                      ]
+                                                            },
+                                                            "view": {"stroke": None}
+                                                  }
+                                                  st.vega_lite_chart(donut_data, donut_spec, use_container_width=True)
+                                                  st.caption(f"Total customers: {int(segment_summary['customers'].sum()):,}")
+
+                                        with chart_col2:
+                                                  st.subheader("Orders by Customer Segment")
+                                                  st.bar_chart(segment_summary[["total_orders"]], use_container_width=True)
+
+                                        st.subheader("Customer Segment Summary")
+                                        summary_display = segment_summary.reset_index().rename(columns={
+                                                  "index": "Customer Segment",
+                                                  "customers": "Customers",
+                                                  "total_orders": "Total Orders"
+                                        })
+                                        st.dataframe(summary_display, use_container_width=True, hide_index=True)
 
                     elif dashboard_page == "Customer & Return Analysis":
 
