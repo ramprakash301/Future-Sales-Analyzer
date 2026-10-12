@@ -463,7 +463,6 @@ def show_power_bi_dashboard():
 
 "Discount & Profit/Loss Analysis",
 
-                              "Machine Learning Prediction",
 
                               "SQL & Technical Analysis",
 
@@ -686,17 +685,6 @@ def show_power_bi_dashboard():
                                         st.subheader("Profit Margin Distribution")
 
                                         st.bar_chart(df["profit_margin"].value_counts().sort_index())
-
-
-
-          elif dashboard_page == "Machine Learning Prediction":
-
-                    st.write("Run predictions from this dashboard.")
-
-                    st.info("Use the Sales Prediction and Return Risk Prediction pages for model inputs and results.")
-
-
-
 
 
 
