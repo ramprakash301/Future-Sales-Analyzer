@@ -697,13 +697,6 @@ def show_power_bi_dashboard():
 
 
 
-                    performance_path = PROJECT_ROOT / "model_performance_summary.csv"
-
-                    if performance_path.exists():
-
-                              st.subheader("Model Performance")
-
-                              st.dataframe(pd.read_csv(performance_path), use_container_width=True)
 
 
 
