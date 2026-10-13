@@ -578,6 +578,7 @@ def show_power_bi_dashboard():
                                                   segment_df[sales_col] = pd.to_numeric(segment_df[sales_col], errors="coerce")
                                                   customer_sales = segment_df.groupby(customer_col)[sales_col].sum(min_count=1).dropna()
                                                   if len(customer_sales) >= 3:
+                                                            # Split customers into three groups based on their total purchase amount.
                                                             customer_segments = pd.qcut(
                                                                       customer_sales.rank(method="first"),
                                                                       q=3,
@@ -585,6 +586,11 @@ def show_power_bi_dashboard():
                                                             )
                                                             segment_lookup = customer_segments.astype(str).to_dict()
                                                             segment_df["customer_segment"] = segment_df[customer_col].map(segment_lookup)
+                                                            segment_ranges = (
+                                                                      pd.DataFrame({"Total Purchase Amount": customer_sales, "Customer Segment": customer_segments.astype(str)})
+                                                                      .groupby("Customer Segment")["Total Purchase Amount"]
+                                                                      .agg(["min", "max"])
+                                                            )
                                                   else:
                                                             st.warning("Not enough customers to create three segments.")
                                                             segment_df["customer_segment"] = "Medium Value"
@@ -632,6 +638,22 @@ def show_power_bi_dashboard():
                                                   st.subheader("Orders by Customer Segment")
                                                   st.bar_chart(segment_summary[["total_orders"]], use_container_width=True)
 
+                                        st.subheader("Purchase Amount Range by Customer Segment")
+                                        if sales_col and customer_col:
+                                                  # Use the same customer-level total sales used to form the segments.
+                                                  if "segment_ranges" not in locals():
+                                                            customer_amounts = segment_df.groupby(customer_col)[sales_col].sum(min_count=1)
+                                                            segment_ranges = pd.DataFrame({"Total Purchase Amount": customer_amounts, "Customer Segment": segment_df.drop_duplicates(customer_col).set_index(customer_col)["customer_segment"]})
+                                                            segment_ranges = segment_ranges.groupby("Customer Segment")["Total Purchase Amount"].agg(["min", "max"])
+                                                  range_order = [name for name in ["High Value", "Medium Value", "Low Value"] if name in segment_ranges.index]
+                                                  range_display = segment_ranges.reindex(range_order).reset_index()
+                                                  range_display["Purchase Amount Range"] = range_display.apply(
+                                                            lambda row: f"{row['min']:,.2f} – {row['max']:,.2f}", axis=1
+                                                  )
+                                                  range_display = range_display.rename(columns={"Customer Segment": "Customer Segment"})
+                                                  st.dataframe(range_display[["Customer Segment", "Purchase Amount Range"]], use_container_width=True, hide_index=True)
+                                                  st.caption("Ranges are based on each customer's total purchase amount in this dataset; they are calculated from the current data, not fixed business rules.")
+
                                         st.subheader("Customer Segment Summary")
                                         summary_display = segment_summary.reset_index().rename(columns={
                                                   "index": "Customer Segment",
@@ -649,30 +671,6 @@ def show_power_bi_dashboard():
                                         st.subheader("Return Status Distribution")
 
                                         st.bar_chart(df["returned"].value_counts())
-
-                              # Show which product categories have the most returned orders.
-                              if "returned" in df.columns and "category" in df.columns:
-
-                                        st.subheader("Returns by Product Category")
-
-                                        return_values = df["returned"].astype(str).str.strip().str.casefold()
-                                        returned_mask = return_values.isin(["1", "true", "yes", "y", "returned"])
-                                        category_returns = (
-                                                  df.loc[returned_mask]
-                                                  .groupby("category")
-                                                  .size()
-                                                  .sort_values(ascending=False)
-                                                  .rename("Returned Orders")
-                                        )
-
-                                        if category_returns.empty:
-                                                  st.info("No returned orders were found in the dataset.")
-                                        else:
-                                                  st.bar_chart(category_returns)
-                                                  st.caption(
-                                                            f"Highest-return category: {category_returns.index[0]} "
-                                                            f"({int(category_returns.iloc[0]):,} returned orders)."
-                                                  )
 
                               if "customer_age" in df.columns:
 
