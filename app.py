@@ -529,12 +529,8 @@ def show_power_bi_dashboard():
                               if all(column in df.columns for column in ["region", "category", "net_sales"]):
 
                                         st.subheader("Region-wise Category Sales")
-                                        # Exclude the Central region from this comparison as requested.
-                                        region_category_data = df[
-                                                  df["region"].astype(str).str.strip().str.casefold() != "central"
-                                        ]
                                         region_category_sales = (
-                                                  region_category_data.groupby(["region", "category"], as_index=False)["net_sales"]
+                                                  df.groupby(["region", "category"], as_index=False)["net_sales"]
                                                   .sum()
                                                   .sort_values("net_sales", ascending=False)
                                         )
@@ -947,3 +943,4 @@ elif page == "Power BI Dashboard":
 elif page == "Project Information":
 
           show_project_information()
+
