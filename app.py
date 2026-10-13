@@ -774,9 +774,6 @@ def show_power_bi_dashboard():
 
                     st.dataframe(pd.crosstab(results["actual_returned"], results["predicted_returned"]))
 
-                    st.subheader("Return Risk Predictions")
-
-                    st.dataframe(results.head(100), use_container_width=True)
 
 
 
