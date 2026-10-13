@@ -650,6 +650,30 @@ def show_power_bi_dashboard():
 
                                         st.bar_chart(df["returned"].value_counts())
 
+                              # Show which product categories have the most returned orders.
+                              if "returned" in df.columns and "category" in df.columns:
+
+                                        st.subheader("Returns by Product Category")
+
+                                        return_values = df["returned"].astype(str).str.strip().str.casefold()
+                                        returned_mask = return_values.isin(["1", "true", "yes", "y", "returned"])
+                                        category_returns = (
+                                                  df.loc[returned_mask]
+                                                  .groupby("category")
+                                                  .size()
+                                                  .sort_values(ascending=False)
+                                                  .rename("Returned Orders")
+                                        )
+
+                                        if category_returns.empty:
+                                                  st.info("No returned orders were found in the dataset.")
+                                        else:
+                                                  st.bar_chart(category_returns)
+                                                  st.caption(
+                                                            f"Highest-return category: {category_returns.index[0]} "
+                                                            f"({int(category_returns.iloc[0]):,} returned orders)."
+                                                  )
+
                               if "customer_age" in df.columns:
 
                                         st.subheader("Customer Age Distribution")
