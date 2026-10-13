@@ -155,6 +155,13 @@ def show_sales_prediction():
 
           st.write("Enter order details to predict net sales.")
 
+          category = st.selectbox(
+                    "Category",
+                    ["Beauty", "Electronics", "Fashion", "Grocery", "Home", "Sports", "Toys"],
+                    key="sales_prediction_category",
+          )
+
+
 
 
           price = st.number_input("Price", min_value=0.0, value=100.0)
@@ -242,6 +249,9 @@ def show_sales_prediction():
                               prediction = model.predict(input_data)[0]
 
                               st.success(f"Predicted Net Sales: {prediction:,.2f}")
+                              st.caption(
+                                        f"Selected category: {category}. The current trained sales model does not include category as an input feature, so the prediction is based on the existing model inputs."
+                              )
 
                     except Exception as error:
 
