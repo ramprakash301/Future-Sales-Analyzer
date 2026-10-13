@@ -526,35 +526,11 @@ def show_power_bi_dashboard():
 
                                                   st.line_chart(monthly, use_container_width=True)
 
-                              if all(column in df.columns for column in ["region", "category", "net_sales"]):
+                              if "category" in df.columns:
 
-                                        st.subheader("Region-wise Category Sales")
-                                        region_category_sales = (
-                                                  df.groupby(["region", "category"], as_index=False)["net_sales"]
-                                                  .sum()
-                                                  .sort_values("net_sales", ascending=False)
-                                        )
-                                        st.bar_chart(
-                                                  region_category_sales,
-                                                  x="category",
-                                                  y="net_sales",
-                                                  color="region",
-                                                  use_container_width=True,
-                                        )
+                                        st.subheader("Category-wise Sales")
 
-                                        st.subheader("Highest-Selling Category in Each Region")
-                                        top_category_by_region = region_category_sales.loc[
-                                                  region_category_sales.groupby("region")["net_sales"].idxmax()
-                                        ].sort_values("net_sales", ascending=False)
-                                        top_category_by_region = top_category_by_region.rename(
-                                                  columns={"region": "Region", "category": "Top Category", "net_sales": "Sales Amount"}
-                                        )
-                                        st.dataframe(
-                                                  top_category_by_region.style.format({"Sales Amount": "{:,.2f}"}),
-                                                  use_container_width=True,
-                                                  hide_index=True,
-                                        )
-
+                                        st.bar_chart(df.groupby("category")["net_sales"].sum().sort_values(ascending=False))
 
 
 
