@@ -555,18 +555,6 @@ def show_power_bi_dashboard():
                                                   hide_index=True,
                                         )
 
-                                        st.subheader("Highest-Selling Region for Each Category")
-                                        top_region_by_category = region_category_sales.loc[
-                                                  region_category_sales.groupby("category")["net_sales"].idxmax()
-                                        ].sort_values("net_sales", ascending=False)
-                                        top_region_by_category = top_region_by_category.rename(
-                                                  columns={"region": "Top Region", "category": "Category", "net_sales": "Sales Amount"}
-                                        )
-                                        st.dataframe(
-                                                  top_region_by_category.style.format({"Sales Amount": "{:,.2f}"}),
-                                                  use_container_width=True,
-                                                  hide_index=True,
-                                        )
 
 
 
@@ -943,4 +931,3 @@ elif page == "Power BI Dashboard":
 elif page == "Project Information":
 
           show_project_information()
-
