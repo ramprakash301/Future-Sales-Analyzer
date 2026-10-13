@@ -578,7 +578,6 @@ def show_power_bi_dashboard():
                                                   segment_df[sales_col] = pd.to_numeric(segment_df[sales_col], errors="coerce")
                                                   customer_sales = segment_df.groupby(customer_col)[sales_col].sum(min_count=1).dropna()
                                                   if len(customer_sales) >= 3:
-                                                            # Split customers into three groups based on their total purchase amount.
                                                             customer_segments = pd.qcut(
                                                                       customer_sales.rank(method="first"),
                                                                       q=3,
@@ -586,11 +585,6 @@ def show_power_bi_dashboard():
                                                             )
                                                             segment_lookup = customer_segments.astype(str).to_dict()
                                                             segment_df["customer_segment"] = segment_df[customer_col].map(segment_lookup)
-                                                            segment_ranges = (
-                                                                      pd.DataFrame({"Total Purchase Amount": customer_sales, "Customer Segment": customer_segments.astype(str)})
-                                                                      .groupby("Customer Segment")["Total Purchase Amount"]
-                                                                      .agg(["min", "max"])
-                                                            )
                                                   else:
                                                             st.warning("Not enough customers to create three segments.")
                                                             segment_df["customer_segment"] = "Medium Value"
@@ -638,22 +632,6 @@ def show_power_bi_dashboard():
                                                   st.subheader("Orders by Customer Segment")
                                                   st.bar_chart(segment_summary[["total_orders"]], use_container_width=True)
 
-                                        st.subheader("Purchase Amount Range by Customer Segment")
-                                        if sales_col and customer_col:
-                                                  # Use the same customer-level total sales used to form the segments.
-                                                  if "segment_ranges" not in locals():
-                                                            customer_amounts = segment_df.groupby(customer_col)[sales_col].sum(min_count=1)
-                                                            segment_ranges = pd.DataFrame({"Total Purchase Amount": customer_amounts, "Customer Segment": segment_df.drop_duplicates(customer_col).set_index(customer_col)["customer_segment"]})
-                                                            segment_ranges = segment_ranges.groupby("Customer Segment")["Total Purchase Amount"].agg(["min", "max"])
-                                                  range_order = [name for name in ["High Value", "Medium Value", "Low Value"] if name in segment_ranges.index]
-                                                  range_display = segment_ranges.reindex(range_order).reset_index()
-                                                  range_display["Purchase Amount Range"] = range_display.apply(
-                                                            lambda row: f"{row['min']:,.2f} – {row['max']:,.2f}", axis=1
-                                                  )
-                                                  range_display = range_display.rename(columns={"Customer Segment": "Customer Segment"})
-                                                  st.dataframe(range_display[["Customer Segment", "Purchase Amount Range"]], use_container_width=True, hide_index=True)
-                                                  st.caption("Ranges are based on each customer's total purchase amount in this dataset; they are calculated from the current data, not fixed business rules.")
-
                                         st.subheader("Customer Segment Summary")
                                         summary_display = segment_summary.reset_index().rename(columns={
                                                   "index": "Customer Segment",
@@ -695,6 +673,41 @@ def show_power_bi_dashboard():
                                         st.subheader("Sales by Discount")
 
                                         st.bar_chart(df.groupby("discount")["net_sales"].sum().sort_index())
+
+                              # Category-wise profitability analysis
+                              if "category" in df.columns and "profit_margin" in df.columns:
+                                        profit_data = df.copy()
+                                        profit_data["profit_margin"] = pd.to_numeric(profit_data["profit_margin"], errors="coerce")
+                                        if "total_amount" in profit_data.columns:
+                                                  profit_data["total_amount"] = pd.to_numeric(profit_data["total_amount"], errors="coerce")
+                                                  profit_data["estimated_profit"] = profit_data["total_amount"] * profit_data["profit_margin"]
+                                        elif "net_sales" in profit_data.columns:
+                                                  profit_data["estimated_profit"] = pd.to_numeric(profit_data["net_sales"], errors="coerce") * profit_data["profit_margin"]
+                                        else:
+                                                  profit_data["estimated_profit"] = profit_data["profit_margin"]
+
+                                        category_profit = (profit_data.dropna(subset=["category", "estimated_profit"])
+                                                           .groupby("category")["estimated_profit"].sum()
+                                                           .sort_values(ascending=False))
+                                        if not category_profit.empty:
+                                                  st.subheader("Category-wise Profit and Loss")
+                                                  left, right = st.columns(2)
+                                                  profitable = category_profit[category_profit > 0].sort_values(ascending=False)
+                                                  loss_making = category_profit[category_profit < 0].sort_values()
+                                                  with left:
+                                                            st.markdown("**Categories with Highest Profit**")
+                                                            if not profitable.empty:
+                                                                      st.bar_chart(profitable)
+                                                                      st.caption(f"Highest profit: {profitable.index[0]} ({profitable.iloc[0]:,.2f})")
+                                                            else:
+                                                                      st.info("No positive profit values found in the dataset.")
+                                                  with right:
+                                                            st.markdown("**Categories with Highest Loss**")
+                                                            if not loss_making.empty:
+                                                                      st.bar_chart(loss_making)
+                                                                      st.caption(f"Highest loss: {loss_making.index[0]} ({loss_making.iloc[0]:,.2f})")
+                                                            else:
+                                                                      st.info("No negative profit values found in the dataset.")
 
                               if "profit_loss_status" in df.columns:
 
