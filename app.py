@@ -674,43 +674,6 @@ def show_power_bi_dashboard():
 
                                         st.bar_chart(df.groupby("discount")["net_sales"].sum().sort_index())
 
-                              # Total profit and total loss amount by category
-                              if "category" in df.columns and "profit_margin" in df.columns:
-                                        profit_data = df.copy()
-                                        profit_data["profit_margin"] = pd.to_numeric(profit_data["profit_margin"], errors="coerce")
-                                        amount_column = "total_amount" if "total_amount" in profit_data.columns else ("net_sales" if "net_sales" in profit_data.columns else None)
-                                        if amount_column:
-                                                  profit_data[amount_column] = pd.to_numeric(profit_data[amount_column], errors="coerce")
-                                                  # The dataset stores profit_margin as a fraction (for example, 0.05 = 5%).
-                                                  profit_data["profit_amount"] = profit_data[amount_column] * profit_data["profit_margin"]
-                                        else:
-                                                  profit_data["profit_amount"] = profit_data["profit_margin"]
-
-                                        profit_data = profit_data.dropna(subset=["category", "profit_amount"])
-                                        profit_data["total_profit_amount"] = profit_data["profit_amount"].clip(lower=0)
-                                        profit_data["total_loss_amount"] = (-profit_data["profit_amount"].clip(upper=0))
-                                        total_profit_by_category = (profit_data.groupby("category")["total_profit_amount"].sum().sort_values(ascending=False))
-                                        total_loss_by_category = (profit_data.groupby("category")["total_loss_amount"].sum().sort_values(ascending=False))
-
-                                        st.subheader("Total Profit Amount and Total Loss Amount by Category")
-                                        left, right = st.columns(2)
-                                        with left:
-                                                  st.markdown("**Total Profit Amount by Category**")
-                                                  if total_profit_by_category.sum() > 0:
-                                                            st.bar_chart(total_profit_by_category[total_profit_by_category > 0])
-                                                            top_profit_category = total_profit_by_category.idxmax()
-                                                            st.caption(f"Highest total profit: {top_profit_category} ({total_profit_by_category.max():,.2f})")
-                                                  else:
-                                                            st.info("No positive profit amounts found in the dataset.")
-                                        with right:
-                                                  st.markdown("**Total Loss Amount by Category**")
-                                                  if total_loss_by_category.sum() > 0:
-                                                            st.bar_chart(total_loss_by_category[total_loss_by_category > 0])
-                                                            top_loss_category = total_loss_by_category.idxmax()
-                                                            st.caption(f"Highest total loss: {top_loss_category} ({total_loss_by_category.max():,.2f})")
-                                                  else:
-                                                            st.info("No negative profit amounts found in the dataset.")
-
                               if "profit_loss_status" in df.columns:
 
                                         st.subheader("Profit/Loss Status")
