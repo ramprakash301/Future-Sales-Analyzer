@@ -554,6 +554,35 @@ def show_power_bi_dashboard():
 
                                         st.bar_chart(df.groupby("region")["net_sales"].sum().sort_values(ascending=False))
 
+                              if all(c in df.columns for c in ["category", "region", "net_sales"]):
+
+                                        st.subheader("Category-wise Sales by Region")
+
+                                        category_region_sales = (
+                                            df.groupby(["category", "region"])["net_sales"]
+                                            .sum()
+                                            .unstack(fill_value=0)
+                                        )
+                                        category_region_sales = category_region_sales.loc[
+                                            category_region_sales.sum(axis=1).sort_values(ascending=False).index
+                                        ]
+                                        st.bar_chart(category_region_sales, use_container_width=True)
+
+                                        st.subheader("Highest-Selling Category in Each Region")
+                                        category_region_long = (
+                                            df.groupby(["category", "region"], as_index=False)["net_sales"]
+                                            .sum()
+                                        )
+                                        top_category_per_region = category_region_long.loc[
+                                            category_region_long.groupby("region")["net_sales"].idxmax()
+                                        ].sort_values("net_sales", ascending=False)
+                                        top_category_per_region = top_category_per_region.rename(columns={
+                                            "category": "Top Category",
+                                            "region": "Region",
+                                            "net_sales": "Total Sales Amount",
+                                        })
+                                        st.dataframe(top_category_per_region, use_container_width=True, hide_index=True)
+
                               columns = [c for c in ["order_date", "category", "region", "net_sales"] if c in df.columns]
 
                               st.subheader("Sales Data")
@@ -639,41 +668,6 @@ def show_power_bi_dashboard():
                                                   "total_orders": "Total Orders"
                                         })
                                         st.dataframe(summary_display, use_container_width=True, hide_index=True)
-
-                                        # Show the actual total purchase range for customers in each segment.
-                                        if customer_col and sales_col:
-                                                  range_source = segment_df[[customer_col, sales_col, "customer_segment"]].copy()
-                                                  range_source[sales_col] = pd.to_numeric(range_source[sales_col], errors="coerce")
-                                                  customer_totals = (
-                                                            range_source.dropna(subset=[sales_col])
-                                                            .groupby(customer_col, as_index=False)
-                                                            .agg(
-                                                                      total_purchase=(sales_col, "sum"),
-                                                                      customer_segment=("customer_segment", "first")
-                                                            )
-                                                  )
-                                                  purchase_ranges = (
-                                                            customer_totals.groupby("customer_segment")["total_purchase"]
-                                                            .agg(minimum_purchase="min", maximum_purchase="max")
-                                                            .reindex(segment_order)
-                                                            .dropna(how="all")
-                                                            .reset_index()
-                                                  )
-                                                  purchase_ranges = purchase_ranges.rename(columns={
-                                                            "customer_segment": "Customer Segment",
-                                                            "minimum_purchase": "Minimum Total Purchase",
-                                                            "maximum_purchase": "Maximum Total Purchase"
-                                                  })
-                                                  st.subheader("Customer Purchase Amount Range")
-                                                  st.caption("Range is based on each customer's total purchase amount across their orders.")
-                                                  st.dataframe(
-                                                            purchase_ranges.style.format({
-                                                                      "Minimum Total Purchase": "{:,.2f}",
-                                                                      "Maximum Total Purchase": "{:,.2f}"
-                                                            }),
-                                                            use_container_width=True,
-                                                            hide_index=True
-                                                  )
 
                     elif dashboard_page == "Customer & Return Analysis":
 
@@ -818,22 +812,60 @@ def show_power_bi_dashboard():
 
 
 def show_project_information():
-
           st.header("Project Information")
+          st.write(
+                    "Future Sales Analyzer helps analyze e-commerce sales data, "
+                    "understand customer behavior, study product returns, and predict future sales."
+          )
 
-          st.write("**Programming Language:** Python")
+          st.subheader("Project Features")
+          features = [
+                    (
+                              "Customer Segmentation",
+                              "Groups customers into segments based on their purchase behavior. "
+                              "This helps understand different types of customers."
+                    ),
+                    (
+                              "Product Return Analysis",
+                              "Analyzes returned and non-returned orders to understand return patterns."
+                    ),
+                    (
+                              "Discount Impact Analysis",
+                              "Compares sales at different discount levels to understand how sales vary with discounts."
+                    ),
+                    (
+                              "Product-wise Profit and Loss Analysis",
+                              "Uses available profit and profit-margin data to help identify profitable and loss-making products or categories."
+                    ),
+                    (
+                              "Sales Prediction",
+                              "Predicts the estimated sales amount using the order details entered by the user."
+                    ),
+                    (
+                              "Return Risk Prediction",
+                              "Estimates whether an order may be returned based on the details entered by the user."
+                    ),
+                    (
+                              "Future Sales Forecasting",
+                              "Uses historical monthly sales data and LightGBM to estimate sales for the next six months."
+                    ),
+                    (
+                              "Sales Analysis Dashboard",
+                              "Displays sales trends and comparisons through charts and tables."
+                    ),
+                    (
+                              "SQL and Technical Analysis",
+                              "Shows the main technologies used in the project, including PostgreSQL, Pandas, LightGBM, Scikit-learn, Power BI, and Streamlit."
+                    ),
+          ]
 
-          st.write("**Data Analysis:** Pandas")
-
-          st.write("**Machine Learning:** LightGBM, Scikit-learn")
-
-          st.write("**Database:** PostgreSQL")
-
-          st.write("**Dashboard:** Power BI")
-
-          st.write("**Web Application:** Streamlit")
-
-
+          for row_start in range(0, len(features), 3):
+                    columns = st.columns(3)
+                    for column, (feature_name, description) in zip(columns, features[row_start:row_start + 3]):
+                              with column:
+                                        with st.container(border=True):
+                                                  st.markdown(f"#### {feature_name}")
+                                                  st.write(description)
 
 
 
