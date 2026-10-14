@@ -456,7 +456,6 @@ def show_power_bi_dashboard():
                               "Executive Overview",
 
                               "Sales Analysis",
-                              "Category & Region Sales",
 
                               "Customer & Return Analysis",
 
@@ -479,7 +478,7 @@ def show_power_bi_dashboard():
 
 
 
-          if dashboard_page in ["Executive Overview", "Sales Analysis", "Category & Region Sales",
+          if dashboard_page in ["Executive Overview", "Sales Analysis",
 
                                                                  "Customer & Return Analysis",
 
@@ -563,26 +562,6 @@ def show_power_bi_dashboard():
 
 
 
-                    elif dashboard_page == "Category & Region Sales":
-                              st.write("Compare total sales for each product category across regions.")
-                              required_columns = {"region", "category", "net_sales"}
-                              if required_columns.issubset(df.columns):
-                                        sales_by_region_category = (
-                                                  df.groupby(["region", "category"], as_index=False)["net_sales"]
-                                                  .sum()
-                                                  .rename(columns={"region": "Region", "category": "Category", "net_sales": "Total Sales Amount"})
-                                                  .sort_values("Total Sales Amount", ascending=False)
-                                        )
-                                        st.subheader("Sales Amount by Category and Region")
-                                        chart_data = sales_by_region_category.pivot(
-                                                  index="Category", columns="Region", values="Total Sales Amount"
-                                        ).fillna(0)
-                                        st.bar_chart(chart_data, use_container_width=True)
-                                        st.subheader("Category and Region Sales Details")
-                                        st.dataframe(sales_by_region_category, use_container_width=True, hide_index=True)
-                              else:
-                                        st.warning("The dataset must contain region, category, and net_sales columns.")
-
                     elif dashboard_page == "Customer Segmentation":
                               st.write("Explore customers grouped by their purchasing value.")
 
@@ -660,6 +639,34 @@ def show_power_bi_dashboard():
                                                   "total_orders": "Total Orders"
                                         })
                                         st.dataframe(summary_display, use_container_width=True, hide_index=True)
+
+                                        # Show the actual total-purchase range for each segment.
+                                        if customer_col and sales_col:
+                                                  range_df = segment_df[[customer_col, "customer_segment", sales_col]].copy()
+                                                  range_df[sales_col] = pd.to_numeric(range_df[sales_col], errors="coerce")
+                                                  customer_totals = (
+                                                            range_df.dropna(subset=[customer_col, sales_col])
+                                                            .groupby([customer_col, "customer_segment"], as_index=False)[sales_col]
+                                                            .sum()
+                                                  )
+                                                  if not customer_totals.empty:
+                                                            amount_ranges = customer_totals.groupby("customer_segment")[sales_col].agg(
+                                                                      Minimum_Purchase="min", Maximum_Purchase="max", Customers="count"
+                                                            ).reset_index()
+                                                            amount_ranges["Segment Order"] = amount_ranges["customer_segment"].map({
+                                                                      "High Value": 0, "Medium Value": 1, "Low Value": 2
+                                                            }).fillna(3)
+                                                            amount_ranges = amount_ranges.sort_values("Segment Order").drop(columns="Segment Order")
+                                                            amount_ranges = amount_ranges.rename(columns={
+                                                                      "customer_segment": "Customer Segment",
+                                                                      "Minimum_Purchase": "Minimum Total Purchase",
+                                                                      "Maximum_Purchase": "Maximum Total Purchase"
+                                                            })
+                                                            amount_ranges["Minimum Total Purchase"] = amount_ranges["Minimum Total Purchase"].map(lambda x: f"{x:,.2f}")
+                                                            amount_ranges["Maximum Total Purchase"] = amount_ranges["Maximum Total Purchase"].map(lambda x: f"{x:,.2f}")
+                                                            st.subheader("Purchase Amount Range by Customer Segment")
+                                                            st.caption("Ranges are calculated from each customer's total purchase amount in the loaded dataset.")
+                                                            st.dataframe(amount_ranges, use_container_width=True, hide_index=True)
 
                     elif dashboard_page == "Customer & Return Analysis":
 
