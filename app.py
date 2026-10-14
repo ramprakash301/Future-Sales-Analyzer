@@ -155,13 +155,6 @@ def show_sales_prediction():
 
           st.write("Enter order details to predict net sales.")
 
-          category = st.selectbox(
-                    "Category",
-                    ["Beauty", "Electronics", "Fashion", "Grocery", "Home", "Sports", "Toys"],
-                    key="sales_prediction_category",
-          )
-
-
 
 
           price = st.number_input("Price", min_value=0.0, value=100.0)
@@ -249,9 +242,6 @@ def show_sales_prediction():
                               prediction = model.predict(input_data)[0]
 
                               st.success(f"Predicted Net Sales: {prediction:,.2f}")
-                              st.caption(
-                                        f"Selected category: {category}. The current trained sales model does not include category as an input feature, so the prediction is based on the existing model inputs."
-                              )
 
                     except Exception as error:
 
@@ -466,6 +456,7 @@ def show_power_bi_dashboard():
                               "Executive Overview",
 
                               "Sales Analysis",
+                              "Category & Region Sales",
 
                               "Customer & Return Analysis",
 
@@ -488,7 +479,7 @@ def show_power_bi_dashboard():
 
 
 
-          if dashboard_page in ["Executive Overview", "Sales Analysis",
+          if dashboard_page in ["Executive Overview", "Sales Analysis", "Category & Region Sales",
 
                                                                  "Customer & Return Analysis",
 
@@ -571,6 +562,26 @@ def show_power_bi_dashboard():
                               st.dataframe(df[columns].head(20), use_container_width=True)
 
 
+
+                    elif dashboard_page == "Category & Region Sales":
+                              st.write("Compare total sales for each product category across regions.")
+                              required_columns = {"region", "category", "net_sales"}
+                              if required_columns.issubset(df.columns):
+                                        sales_by_region_category = (
+                                                  df.groupby(["region", "category"], as_index=False)["net_sales"]
+                                                  .sum()
+                                                  .rename(columns={"region": "Region", "category": "Category", "net_sales": "Total Sales Amount"})
+                                                  .sort_values("Total Sales Amount", ascending=False)
+                                        )
+                                        st.subheader("Sales Amount by Category and Region")
+                                        chart_data = sales_by_region_category.pivot(
+                                                  index="Category", columns="Region", values="Total Sales Amount"
+                                        ).fillna(0)
+                                        st.bar_chart(chart_data, use_container_width=True)
+                                        st.subheader("Category and Region Sales Details")
+                                        st.dataframe(sales_by_region_category, use_container_width=True, hide_index=True)
+                              else:
+                                        st.warning("The dataset must contain region, category, and net_sales columns.")
 
                     elif dashboard_page == "Customer Segmentation":
                               st.write("Explore customers grouped by their purchasing value.")
@@ -784,6 +795,9 @@ def show_power_bi_dashboard():
 
                     st.dataframe(pd.crosstab(results["actual_returned"], results["predicted_returned"]))
 
+                    st.subheader("Return Risk Predictions")
+
+                    st.dataframe(results.head(100), use_container_width=True)
 
 
 
