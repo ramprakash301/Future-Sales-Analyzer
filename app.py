@@ -603,6 +603,72 @@ def show_power_bi_dashboard():
 
                               st.dataframe(df[columns].head(20), use_container_width=True)
 
+                              # Search a category and compare its net sales across every region.
+                              st.divider()
+                              st.subheader("Search Category-wise Sales by Region")
+                              category_search = st.text_input(
+                                        "Search Product Category",
+                                        placeholder="Type Electronics, Clothing, Grocery...",
+                                        key="sales_analysis_category_search",
+                              )
+
+                              if category_search.strip():
+                                        if all(column in df.columns for column in ["category", "region", "net_sales"]):
+                                                  search_df = df.copy()
+                                                  search_df["net_sales"] = pd.to_numeric(
+                                                            search_df["net_sales"], errors="coerce"
+                                                  )
+                                                  matched_df = search_df[
+                                                            search_df["category"].astype(str).str.contains(
+                                                                      category_search.strip(),
+                                                                      case=False,
+                                                                      na=False,
+                                                            )
+                                                  ].dropna(subset=["net_sales"])
+
+                                                  if not matched_df.empty:
+                                                            region_sales = (
+                                                                      matched_df.groupby("region", as_index=False)["net_sales"]
+                                                                      .sum()
+                                                                      .sort_values("net_sales", ascending=False)
+                                                            )
+                                                            st.subheader(
+                                                                      f"{category_search.strip()} - Region-wise Sales"
+                                                            )
+                                                            st.bar_chart(
+                                                                      region_sales,
+                                                                      x="region",
+                                                                      y="net_sales",
+                                                                      x_label="Region",
+                                                                      y_label="Total Net Sales",
+                                                                      use_container_width=True,
+                                                            )
+                                                            display_region_sales = region_sales.rename(
+                                                                      columns={
+                                                                                "region": "Region",
+                                                                                "net_sales": "Total Net Sales",
+                                                                      }
+                                                            )
+                                                            st.dataframe(
+                                                                      display_region_sales.style.format(
+                                                                                {"Total Net Sales": "{:,.2f}"}
+                                                                      ),
+                                                                      use_container_width=True,
+                                                                      hide_index=True,
+                                                            )
+                                                  else:
+                                                            st.warning(
+                                                                      "No matching category found in the dataset. "
+                                                                      "Check the category name and try again."
+                                                            )
+                                        else:
+                                                  st.error(
+                                                            "The dataset must contain category, region, and net_sales columns."
+                                                  )
+                              else:
+                                        st.info(
+                                                  "Enter a category name to view its sales across all regions."
+                                        )
 
 
                     elif dashboard_page == "Customer Segmentation":
