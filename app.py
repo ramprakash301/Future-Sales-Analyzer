@@ -277,9 +277,7 @@ def show_return_risk_prediction():
 
                     "Category",
 
-                    ["Grocery", "Clothing", "Electronics", "Home", "Beauty",
-
-                        "Fashion", "Sports", "Toys", "Other"],
+                    ["BEAUTY", "ELECTRONICS", "FASHION", "GROCERY", "HOME", "SPORTS", "TOYS"],
 
                     key="rr_category",
 
@@ -608,7 +606,7 @@ def show_power_bi_dashboard():
                               st.subheader("Search Category-wise Sales by Region")
                               category_search = st.text_input(
                                         "Search Product Category",
-                                        placeholder="Type Electronics, Clothing, Grocery...",
+                                        placeholder="Type BEAUTY, ELECTRONICS, FASHION, GROCERY, HOME, SPORTS, TOYS...",
                                         key="sales_analysis_category_search",
                               )
 
